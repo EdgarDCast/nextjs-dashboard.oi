@@ -1,0 +1,23 @@
+
+.wrapper {
+  display: grid;
+  gap: 1.5rem;
+}
+@media (min-width: 768px) {
+  .wrapper {
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+  }
+}
+
+.card {
+  background: #f8fafc;            
+  border: 1px solid #e5e7eb;       
+  border-radius: 12px;
+  padding: 2rem;
+}
+
+.brand {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
