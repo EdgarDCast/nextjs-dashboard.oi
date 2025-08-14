@@ -1,3 +1,4 @@
+// app/dashboard/cards.tsx
 import {
   BanknotesIcon,
   ClockIcon,
@@ -6,27 +7,35 @@ import {
 } from '@heroicons/react/24/outline';
 import { lusitana } from '@/app/ui/fonts';
 
-const iconMap = {
+type CardType = 'invoices' | 'customers' | 'pending' | 'collected';
+
+const iconMap: Record<CardType, React.ComponentType<React.SVGProps<SVGSVGElement>>> = {
   collected: BanknotesIcon,
   customers: UserGroupIcon,
   pending: ClockIcon,
   invoices: InboxIcon,
 };
 
-export default async function CardWrapper() {
-  return (
-    <>
-      {/* NOTE: Uncomment this code in Chapter 9 */}
+export type CardsProps = {
+  totalPaidInvoices: number | string;
+  totalPendingInvoices: number | string;
+  numberOfInvoices: number | string;
+  numberOfCustomers: number | string;
+};
 
-      {/* <Card title="Collected" value={totalPaidInvoices} type="collected" />
+export default function Cards({
+  totalPaidInvoices,
+  totalPendingInvoices,
+  numberOfInvoices,
+  numberOfCustomers,
+}: CardsProps) {
+  return (
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <Card title="Collected" value={totalPaidInvoices} type="collected" />
       <Card title="Pending" value={totalPendingInvoices} type="pending" />
       <Card title="Total Invoices" value={numberOfInvoices} type="invoices" />
-      <Card
-        title="Total Customers"
-        value={numberOfCustomers}
-        type="customers"
-      /> */}
-    </>
+      <Card title="Total Customers" value={numberOfCustomers} type="customers" />
+    </div>
   );
 }
 
@@ -37,10 +46,9 @@ export function Card({
 }: {
   title: string;
   value: number | string;
-  type: 'invoices' | 'customers' | 'pending' | 'collected';
+  type: CardType;
 }) {
   const Icon = iconMap[type];
-
   return (
     <div className="rounded-xl bg-gray-50 p-2 shadow-sm">
       <div className="flex p-4">

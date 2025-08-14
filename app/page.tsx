@@ -13,6 +13,7 @@ export default function Page() {
       <div className="mt-4 flex grow flex-col gap-4 md:flex-row">
         {/* Columna izquierda */}
         <div className="flex flex-col justify-center gap-6 rounded-lg bg-gray-50 px-6 py-10 md:w-2/5 md:px-20">
+          <AcmeLogo />
           <p className="text-xl text-gray-800 md:text-3xl md:leading-normal">
             <strong>Welcome to Acme.</strong> This is the example for the{' '}
             <a href="https://nextjs.org/learn/" className="text-blue-500">
@@ -30,7 +31,6 @@ export default function Page() {
               <ArrowRightIcon className="w-5 md:w-6" />
             </Link>
 
-            {/* Nuevo: Ir al Dashboard */}
             <Link
               href="/dashboard"
               className="rounded-lg border border-blue-500 px-6 py-3 text-sm font-medium text-blue-600 hover:bg-sky-50 md:text-base"
@@ -44,17 +44,15 @@ export default function Page() {
         <div className="flex items-center justify-center p-6 md:w-3/5 md:px-28 md:py-12">
           <div className="w-full max-w-lg">
             <Image
-              src="/nextjs-icon.webp"     // verifica que el nombre coincida exactamente
+              src="/nextjs-icon.webp"
               alt="Next.js Icon"
               width={320}
               height={70}
               priority
             />
-
             <div className="h-6" />
-
             <Image
-              src="/next-js-logo-png_seeklogo-321806.png" // idem: que exista en /public
+              src="/next-js-logo-png_seeklogo-321806.png"
               alt="Next.js Logo"
               width={900}
               height={200}

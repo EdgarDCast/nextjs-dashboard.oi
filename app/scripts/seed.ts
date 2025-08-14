@@ -1,10 +1,12 @@
 
 import dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
-
 import { sql } from '@vercel/postgres';
 import { randomUUID } from 'crypto';
+// ✅ usa ruta relativa correcta (una carpeta arriba, luego lib)
 import { customers, invoices, revenue } from '../lib/placeholder-data';
+
+
 
 // Validar que exista la URL de Postgres
 if (!process.env.POSTGRES_URL) {

@@ -1,7 +1,6 @@
-// This file contains type definitions for your data.
-// It describes the shape of the data, and what data type each property should accept.
-// For simplicity of teaching, we're manually defining these types.
-// However, these types are generated automatically if you're using an ORM such as Prisma.
+// app/lib/definitions.ts
+
+// Tipos base
 export type User = {
   id: string;
   name: string;
@@ -19,31 +18,32 @@ export type Customer = {
 export type Invoice = {
   id: string;
   customer_id: string;
-  amount: number;
+  amount: number; // Guardado en centavos si usas Stripe-like, o en valor normal si no
   date: string;
-  // In TypeScript, this is called a string union type.
-  // It means that the "status" property can only be one of the two strings: 'pending' or 'paid'.
   status: 'pending' | 'paid';
 };
 
+// === Para métricas de revenue ===
 export type Revenue = {
   month: string;
-  revenue: number;
+  revenue: number; // numérico en la BD
 };
 
+// === Para últimas facturas ===
 export type LatestInvoice = {
   id: string;
   name: string;
   image_url: string;
   email: string;
-  amount: string;
+  amount: string; // formateado con formatCurrency()
 };
 
-// The database returns a number for amount, but we later format it to a string with the formatCurrency function
+// La BD devuelve number, luego lo formateamos a string
 export type LatestInvoiceRaw = Omit<LatestInvoice, 'amount'> & {
   amount: number;
 };
 
+// === Tablas y listados ===
 export type InvoicesTable = {
   id: string;
   customer_id: string;
@@ -85,4 +85,9 @@ export type InvoiceForm = {
   customer_id: string;
   amount: number;
   status: 'pending' | 'paid';
+};
+
+// === Extra para fetchCardData ===
+export type CountRow = {
+  count: number;
 };
