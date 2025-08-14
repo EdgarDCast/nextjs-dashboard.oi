@@ -1,6 +1,6 @@
 // app/lib/definitions.ts
 
-// Tipos base
+
 export type User = {
   id: string;
   name: string;
@@ -15,18 +15,20 @@ export type Customer = {
   image_url: string;
 };
 
+export type Status = 'pending' | 'paid';
+
 export type Invoice = {
   id: string;
   customer_id: string;
-  amount: number; // Guardado en centavos si usas Stripe-like, o en valor normal si no
-  date: string;
-  status: 'pending' | 'paid';
+  amount: number; // valor decimal 
+  date: string;  
+  status: Status;
 };
 
 // === Para métricas de revenue ===
 export type Revenue = {
   month: string;
-  revenue: number; // numérico en la BD
+  revenue: number;
 };
 
 // === Para últimas facturas ===
@@ -35,24 +37,25 @@ export type LatestInvoice = {
   name: string;
   image_url: string;
   email: string;
-  amount: string; // formateado con formatCurrency()
+  amount: string;   // formateado con formatCurrency()
 };
 
 // La BD devuelve number, luego lo formateamos a string
 export type LatestInvoiceRaw = Omit<LatestInvoice, 'amount'> & {
-  amount: number;
+  amount: number;   // viene como float8 en SQL
 };
 
 // === Tablas y listados ===
+
+// id, amount, date, status, customers.name/email/image_url
 export type InvoicesTable = {
   id: string;
-  customer_id: string;
+  amount: number;
+  date: string;
+  status: Status;
   name: string;
   email: string;
   image_url: string;
-  date: string;
-  amount: number;
-  status: 'pending' | 'paid';
 };
 
 export type CustomersTableType = {
@@ -61,8 +64,8 @@ export type CustomersTableType = {
   email: string;
   image_url: string;
   total_invoices: number;
-  total_pending: number;
-  total_paid: number;
+  total_pending: number; // ya convertido a number en data.ts
+  total_paid: number;    
 };
 
 export type FormattedCustomersTable = {
@@ -80,11 +83,13 @@ export type CustomerField = {
   name: string;
 };
 
+// Usado por fetchInvoiceById (incluye date)
 export type InvoiceForm = {
   id: string;
   customer_id: string;
   amount: number;
-  status: 'pending' | 'paid';
+  status: Status;
+  date: string;
 };
 
 // === Extra para fetchCardData ===
