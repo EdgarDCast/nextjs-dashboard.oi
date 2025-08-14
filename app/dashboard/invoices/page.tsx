@@ -6,7 +6,7 @@ import Pagination from '@/app/ui/pagination';
 import InvoicesTable from './table';
 import { fetchInvoicesPages } from '@/app/lib/data';
 import { InvoicesTableSkeleton } from '@/app/ui/skeletons';
-import { CreateInvoice } from './buttons'; 
+
 
 type SearchParams = {
   query?: string;
@@ -16,9 +16,10 @@ type SearchParams = {
 export default async function Page({
   searchParams,
 }: {
-  searchParams?: SearchParams; //  corregido (no Promise)
+  // Next 15 canary: searchParams es Promise
+  searchParams?: Promise<SearchParams>;
 }) {
-  const sp = searchParams ?? {};
+  const sp = (await searchParams) ?? {};
   const query = (sp.query ?? '').toString();
 
   const parsed = Number(sp.page ?? '1');
@@ -36,11 +37,18 @@ export default async function Page({
 
         {/* derecha: botón + buscador + paginación compacta */}
         <div className="flex w-full items-center gap-3 sm:w-auto">
-          <CreateInvoice /> {/* lleva a /dashboard/invoices/create */}
+          <Link
+            href="/dashboard/invoices/create"
+            className="rounded bg-blue-600 px-3 py-2 text-white hover:bg-blue-700"
+          >
+            New
+          </Link>
+
           <Search
             placeholder="Search invoices, customers, status…"
             defaultValue={query}
           />
+
           <Pagination totalPages={safeTotal} currentPage={currentPage} />
         </div>
       </div>
