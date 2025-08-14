@@ -1,55 +1,17 @@
 // app/dashboard/page.tsx
-import { sql } from '@/app/lib/db';
+import { Suspense } from 'react';
 import Cards from '@/app/dashboard/cards';
 import RevenueChart from '@/app/dashboard/revenue-chart';
 import LatestInvoices from '@/app/dashboard/latest-invoices';
-import { formatCurrency } from '@/app/lib/utils';
-import type { Revenue as RevenueType, LatestInvoice as LatestInvoiceType } from '@/app/lib/definitions';
+import {
+  CardsSkeleton,
+  RevenueChartSkeleton,
+  LatestInvoicesSkeleton,
+} from '@/app/ui/skeletons';
+import { sql } from '@/app/lib/db';
 
-export default async function DashboardPage() {
-  // Cards (conteos)
-  const { rows: totalPaidInvoices } = await sql<{ count: number }>`
-    SELECT COUNT(*)::int AS count FROM invoices WHERE status = 'paid';
-  `;
-  const { rows: totalPendingInvoices } = await sql<{ count: number }>`
-    SELECT COUNT(*)::int AS count FROM invoices WHERE status = 'pending';
-  `;
-  const { rows: numberOfInvoices } = await sql<{ count: number }>`
-    SELECT COUNT(*)::int AS count FROM invoices;
-  `;
-  const { rows: numberOfCustomers } = await sql<{ count: number }>`
-    SELECT COUNT(*)::int AS count FROM customers;
-  `;
-
-  // Revenue (TYPED como RevenueType)
-  const { rows: revenue } = await sql<RevenueType>`
-    SELECT month, revenue
-    FROM revenue
-    ORDER BY month ASC
-    LIMIT 12;
-  `;
-
-  // Latest invoices: la query devuelve amount:number -> lo convertimos a string formateado
-  const { rows: latestInvoicesRows } = await sql<
-    Omit<LatestInvoiceType, 'amount'> & { amount: number }
-  >`
-    SELECT invoices.id,
-           customers.name,
-           customers.email,
-           customers.image_url,
-           invoices.amount
-    FROM invoices
-    JOIN customers ON invoices.customer_id = customers.id
-    ORDER BY invoices.date DESC
-    LIMIT 5;
-  `;
-
-  const latestInvoices: LatestInvoiceType[] = latestInvoicesRows.map((r) => ({
-    ...r,
-    amount: formatCurrency(r.amount),
-  }));
-
-  // Top 5 customers
+// --- (Opcional) TopCustomers como sub-componente async en esta misma página ---
+async function TopCustomers() {
   const { rows: customers } = await sql<{
     id: string;
     name: string;
@@ -63,58 +25,80 @@ export default async function DashboardPage() {
   `;
 
   return (
+    <section>
+      <h1 className="text-2xl font-bold mb-4">Top 5 Customers</h1>
+      <div className="overflow-x-auto">
+        <table className="min-w-[480px] w-full border">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="text-left p-2 border-r">Name</th>
+              <th className="text-left p-2 border-r">Email</th>
+              <th className="text-left p-2">Avatar</th>
+            </tr>
+          </thead>
+          <tbody>
+            {customers.map((c) => (
+              <tr key={c.id} className="border-t">
+                <td className="p-2 border-r">{c.name}</td>
+                <td className="p-2 border-r">{c.email}</td>
+                <td className="p-2">
+                  {c.image_url ? (
+                    // En Next/Image ponlo si quieres optimizar; aquí basta <img/>
+                    <img
+                      src={c.image_url}
+                      alt={c.name}
+                      className="h-8 w-8 rounded-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-gray-400">—</span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
+// Skeleton muy simple para TopCustomers
+function TopCustomersSkeleton() {
+  return (
+    <section>
+      <div className="h-7 w-48 mb-4 rounded animate-pulse bg-gray-200" />
+      <div className="border rounded">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="h-12 border-b last:border-0 animate-pulse bg-gray-100" />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+export default async function DashboardPage() {
+  return (
     <main className="p-6 space-y-6">
       {/* Cards */}
-      <section>
-        <Cards
-          totalPaidInvoices={totalPaidInvoices[0]?.count ?? 0}
-          totalPendingInvoices={totalPendingInvoices[0]?.count ?? 0}
-          numberOfInvoices={numberOfInvoices[0]?.count ?? 0}
-          numberOfCustomers={numberOfCustomers[0]?.count ?? 0}
-        />
-      </section>
+      <Suspense fallback={<CardsSkeleton />}>
+        <Cards />
+      </Suspense>
 
-      {/* Revenue y Latest Invoices */}
+      {/* Revenue + Latest Invoices */}
       <section className="grid grid-cols-1 md:grid-cols-8 gap-6">
-        {/* revenue ya es RevenueType[] */}
-        <RevenueChart revenue={revenue} />
-        <LatestInvoices latestInvoices={latestInvoices} />
+        <Suspense fallback={<RevenueChartSkeleton />}>
+          <RevenueChart />
+        </Suspense>
+
+        <Suspense fallback={<LatestInvoicesSkeleton />}>
+          <LatestInvoices />
+        </Suspense>
       </section>
 
-      {/* Top 5 Customers */}
-      <section>
-        <h1 className="text-2xl font-bold mb-4">Top 5 Customers</h1>
-        <div className="overflow-x-auto">
-          <table className="min-w-[480px] w-full border">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="text-left p-2 border-r">Name</th>
-                <th className="text-left p-2 border-r">Email</th>
-                <th className="text-left p-2">Avatar</th>
-              </tr>
-            </thead>
-            <tbody>
-              {customers.map((c) => (
-                <tr key={c.id} className="border-t">
-                  <td className="p-2 border-r">{c.name}</td>
-                  <td className="p-2 border-r">{c.email}</td>
-                  <td className="p-2">
-                    {c.image_url ? (
-                      <img
-                        src={c.image_url}
-                        alt={c.name}
-                        className="h-8 w-8 rounded-full object-cover"
-                      />
-                    ) : (
-                      <span className="text-gray-400">—</span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+      {/* TopCustomers (opcional) */}
+      <Suspense fallback={<TopCustomersSkeleton />}>
+        <TopCustomers />
+      </Suspense>
     </main>
   );
 }

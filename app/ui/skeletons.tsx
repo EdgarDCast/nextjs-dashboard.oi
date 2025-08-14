@@ -216,3 +216,20 @@ export function InvoicesTableSkeleton() {
     </div>
   );
 }
+
+// --- Nuevo Skeleton para TopCustomers ---
+export function TopCustomersSkeleton() {
+  return (
+    <section className={`${shimmer} relative overflow-hidden`}>
+      <div className="h-7 w-48 mb-4 rounded bg-gray-200" />
+      <div className="border rounded">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div
+            key={i}
+            className="h-12 border-b last:border-0 bg-gray-100"
+          />
+        ))}
+      </div>
+    </section>
+  );
+}

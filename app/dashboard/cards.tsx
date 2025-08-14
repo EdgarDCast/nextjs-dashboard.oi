@@ -6,6 +6,7 @@ import {
   InboxIcon,
 } from '@heroicons/react/24/outline';
 import { lusitana } from '@/app/ui/fonts';
+import { fetchCardData } from '@/app/lib/data';
 
 type CardType = 'invoices' | 'customers' | 'pending' | 'collected';
 
@@ -16,25 +17,27 @@ const iconMap: Record<CardType, React.ComponentType<React.SVGProps<SVGSVGElement
   invoices: InboxIcon,
 };
 
-export type CardsProps = {
-  totalPaidInvoices: number | string;
-  totalPendingInvoices: number | string;
-  numberOfInvoices: number | string;
-  numberOfCustomers: number | string;
-};
+export default async function Cards() {
+  // 🔹 Carga de datos aquí (sin props)
+  const {
+    numberOfCustomers,
+    numberOfInvoices,
+    totalPaidInvoices,
+    totalPendingInvoices,
+  } = await fetchCardData();
 
-export default function Cards({
-  totalPaidInvoices,
-  totalPendingInvoices,
-  numberOfInvoices,
-  numberOfCustomers,
-}: CardsProps) {
+  const items: Array<{ title: string; value: number | string; type: CardType }> = [
+    { title: 'Collected',        value: totalPaidInvoices,   type: 'collected' },
+    { title: 'Pending',          value: totalPendingInvoices, type: 'pending' },
+    { title: 'Total Invoices',   value: numberOfInvoices,     type: 'invoices' },
+    { title: 'Total Customers',  value: numberOfCustomers,    type: 'customers' },
+  ];
+
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <Card title="Collected" value={totalPaidInvoices} type="collected" />
-      <Card title="Pending" value={totalPendingInvoices} type="pending" />
-      <Card title="Total Invoices" value={numberOfInvoices} type="invoices" />
-      <Card title="Total Customers" value={numberOfCustomers} type="customers" />
+      {items.map((it) => (
+        <Card key={it.title} title={it.title} value={it.value} type={it.type} />
+      ))}
     </div>
   );
 }
@@ -56,8 +59,7 @@ export function Card({
         <h3 className="ml-2 text-sm font-medium">{title}</h3>
       </div>
       <p
-        className={`${lusitana.className}
-          truncate rounded-xl bg-white px-4 py-8 text-center text-2xl`}
+        className={`${lusitana.className} truncate rounded-xl bg-white px-4 py-8 text-center text-2xl`}
       >
         {value}
       </p>

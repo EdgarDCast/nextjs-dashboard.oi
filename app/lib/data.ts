@@ -10,11 +10,19 @@ import {
   Revenue,
 } from './definitions';
 import { formatCurrency } from './utils';
+import { unstable_noStore as noStore } from 'next/cache';
+
+// Utilidad para simular latencia
+const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // === Revenue ===
 export async function fetchRevenue() {
+  noStore();
   try {
+    console.log('[fetchRevenue] start');
+    await pause(3000); // Simulación de 3s
     const result = await sql<Revenue>`SELECT month, revenue FROM revenue ORDER BY month ASC`;
+    console.log('[fetchRevenue] done');
     return result.rows;
   } catch (error) {
     console.error('Database Error:', error);
@@ -24,7 +32,10 @@ export async function fetchRevenue() {
 
 // === Latest Invoices (formatea amount) ===
 export async function fetchLatestInvoices() {
+  noStore();
   try {
+    console.log('[fetchLatestInvoices] start');
+    await pause(6000); // Simulación de 6s
     const result = await sql<LatestInvoiceRaw>`
       SELECT invoices.amount, customers.name, customers.image_url, customers.email, invoices.id
       FROM invoices
@@ -38,6 +49,7 @@ export async function fetchLatestInvoices() {
       amount: formatCurrency(invoice.amount),
     }));
 
+    console.log('[fetchLatestInvoices] done');
     return latestInvoices;
   } catch (error) {
     console.error('Database Error:', error);
@@ -47,7 +59,9 @@ export async function fetchLatestInvoices() {
 
 // === Card metrics ===
 export async function fetchCardData() {
+  noStore();
   try {
+    console.log('[fetchCardData] start');
     const invoiceCountPromise = sql<{ count: number }>`
       SELECT COUNT(*)::int AS count FROM invoices
     `;
@@ -72,6 +86,7 @@ export async function fetchCardData() {
     const totalPaidInvoices = formatCurrency(statusRes.rows[0]?.paid ?? 0);
     const totalPendingInvoices = formatCurrency(statusRes.rows[0]?.pending ?? 0);
 
+    console.log('[fetchCardData] done');
     return {
       numberOfCustomers,
       numberOfInvoices,
@@ -88,6 +103,7 @@ const ITEMS_PER_PAGE = 6;
 
 // === Invoices table ===
 export async function fetchFilteredInvoices(query: string, currentPage: number) {
+  noStore();
   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
 
   try {
@@ -119,6 +135,7 @@ export async function fetchFilteredInvoices(query: string, currentPage: number) 
 }
 
 export async function fetchInvoicesPages(query: string) {
+  noStore();
   try {
     const result = await sql<{ count: number }>`
       SELECT COUNT(*)::int AS count
@@ -141,6 +158,7 @@ export async function fetchInvoicesPages(query: string) {
 }
 
 export async function fetchInvoiceById(id: string) {
+  noStore();
   try {
     const result = await sql<InvoiceForm>`
       SELECT
@@ -153,7 +171,7 @@ export async function fetchInvoiceById(id: string) {
     `;
     const invoice = result.rows.map((inv) => ({
       ...inv,
-      amount: inv.amount / 100, // si guardas en centavos
+      amount: inv.amount / 100, 
     }));
     return invoice[0];
   } catch (error) {
@@ -163,6 +181,7 @@ export async function fetchInvoiceById(id: string) {
 }
 
 export async function fetchCustomers() {
+  noStore();
   try {
     const result = await sql<CustomerField>`
       SELECT id, name
@@ -177,6 +196,7 @@ export async function fetchCustomers() {
 }
 
 export async function fetchFilteredCustomers(query: string) {
+  noStore();
   try {
     const result = await sql<CustomersTableType>`
       SELECT

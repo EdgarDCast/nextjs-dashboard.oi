@@ -1,10 +1,15 @@
+// app/dashboard/revenue-chart.tsx
 import { generateYAxis } from '@/app/lib/utils';
 import { CalendarIcon } from '@heroicons/react/24/outline';
 import { lusitana } from '@/app/ui/fonts';
-import { Revenue } from '@/app/lib/definitions';
+import { fetchRevenue } from '@/app/lib/data';
+import type { Revenue } from '@/app/lib/definitions';
 
-export default function RevenueChart({ revenue }: { revenue: Revenue[] }) {
+export default async function RevenueChart() {
   const chartHeight = 350;
+
+  // 🔹 Se cargamos los datos aquí (async Server Component)
+  const revenue: Revenue[] = await fetchRevenue();
 
   // Si no hay datos, mostramos un placeholder
   if (!revenue || revenue.length === 0) {
