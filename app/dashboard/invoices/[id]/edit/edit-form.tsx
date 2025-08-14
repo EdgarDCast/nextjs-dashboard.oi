@@ -53,12 +53,12 @@ export default function EditForm({ customers, invoice }: Props) {
 
       {/* Customer */}
       <div>
-        <label htmlFor="customerId" className="block text-sm font-medium">
+        <label htmlFor="customer_id" className="block text-sm font-medium">
           Customer
         </label>
         <select
-          id="customerId"
-          name="customerId"
+          id="customer_id"
+          name="customer_id"          // <-- clave que espera la action
           defaultValue={invoice.customer_id || ''}
           className="mt-1 w-full rounded border p-2"
           required
@@ -72,9 +72,9 @@ export default function EditForm({ customers, invoice }: Props) {
             </option>
           ))}
         </select>
-        {state.errors?.['customerId'] && (
+        {state.errors?.['customer_id'] && (   // <-- errores con la misma clave
           <p className="text-sm text-red-600">
-            {state.errors['customerId'].join(', ')}
+            {state.errors['customer_id'].join(', ')}
           </p>
         )}
       </div>

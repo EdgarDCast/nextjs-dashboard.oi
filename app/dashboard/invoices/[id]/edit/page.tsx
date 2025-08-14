@@ -5,9 +5,10 @@ import EditForm from './edit-form';
 export default async function EditInvoicePage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const id = params.id;
+  const { id } = await params;
+
   const [invoice, customers] = await Promise.all([
     fetchInvoiceById(id),
     fetchCustomers(),
@@ -16,9 +17,7 @@ export default async function EditInvoicePage({
   return (
     <main className="p-6 space-y-6">
       <h1 className="mb-2 text-2xl font-bold">Edit Invoice</h1>
-      {/* No pases id aquí */}
       <EditForm invoice={invoice} customers={customers} />
     </main>
   );
 }
-
