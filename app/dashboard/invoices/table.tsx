@@ -17,13 +17,15 @@ export default async function InvoicesTable({
 }) {
   const invoices: InvoicesTableType[] = await fetchFilteredInvoices(query, currentPage);
 
-  // Empty state (móvil y desktop)
+  // Empty state (móvil y desktop) con región viva
   if (!invoices || invoices.length === 0) {
     return (
-      <div className="mt-6 rounded-lg bg-gray-50 p-6 text-sm text-gray-500">
-        {query
-          ? <>No results for <span className="font-medium">“{query}”</span>.</>
-          : 'No invoices yet.'}
+      <div className="mt-6 rounded-lg bg-gray-50 p-6 text-sm text-gray-500" aria-live="polite" role="status">
+        {query ? (
+          <>No results for <span className="font-medium">“{query}”</span>.</>
+        ) : (
+          'No invoices yet.'
+        )}
       </div>
     );
   }
@@ -32,12 +34,12 @@ export default async function InvoicesTable({
     <div className="mt-6 flow-root">
       <div className="inline-block min-w-full align-middle">
         <div className="rounded-lg bg-gray-50 p-2 md:pt-0">
-          {/* Mobile list */}
-          <div className="md:hidden">
+          {/* Mobile list (semántica de lista) */}
+          <ul className="md:hidden" role="list" aria-label="Invoices">
             {invoices.map((invoice) => {
               const avatar = invoice.image_url || FALLBACK_AVATAR;
               return (
-                <div
+                <li
                   key={invoice.id}
                   className="mb-2 w-full rounded-md bg-white p-4"
                 >
@@ -63,7 +65,9 @@ export default async function InvoicesTable({
                         {formatCurrency(invoice.amount)}
                       </p>
                       <p className="text-sm text-gray-600">
-                        {formatDateToLocal(invoice.date)}
+                        <time dateTime={invoice.date}>
+                          {formatDateToLocal(invoice.date)}
+                        </time>
                       </p>
                     </div>
                     <div className="flex justify-end gap-2">
@@ -71,16 +75,17 @@ export default async function InvoicesTable({
                       <DeleteInvoice id={invoice.id} />
                     </div>
                   </div>
-                </div>
+                </li>
               );
             })}
-          </div>
+          </ul>
 
           {/* Desktop table */}
           <table
             className="hidden min-w-full text-gray-900 md:table"
             aria-label="Invoices table"
           >
+            <caption className="sr-only">Invoices</caption>
             <thead className="rounded-lg text-left text-sm font-normal">
               <tr>
                 <th scope="col" className="px-4 py-5 font-medium sm:pl-6">
@@ -115,7 +120,8 @@ export default async function InvoicesTable({
                                [&:last-child>td:first-child]:rounded-bl-lg
                                [&:last-child>td:last-child]:rounded-br-lg"
                   >
-                    <td className="whitespace-nowrap py-3 pl-6 pr-3">
+                    {/* Customer como encabezado de fila */}
+                    <th scope="row" className="whitespace-nowrap py-3 pl-6 pr-3 font-medium">
                       <div className="flex items-center gap-3">
                         <Image
                           src={avatar}
@@ -124,15 +130,17 @@ export default async function InvoicesTable({
                           height={28}
                           alt={`${invoice.name}'s profile picture`}
                         />
-                        <p className="font-medium">{invoice.name}</p>
+                        <span>{invoice.name}</span>
                       </div>
-                    </td>
+                    </th>
                     <td className="whitespace-nowrap px-3 py-3">{invoice.email}</td>
                     <td className="whitespace-nowrap px-3 py-3">
                       {formatCurrency(invoice.amount)}
                     </td>
                     <td className="whitespace-nowrap px-3 py-3">
-                      {formatDateToLocal(invoice.date)}
+                      <time dateTime={invoice.date}>
+                        {formatDateToLocal(invoice.date)}
+                      </time>
                     </td>
                     <td className="whitespace-nowrap px-3 py-3">
                       <InvoiceStatus status={invoice.status} />

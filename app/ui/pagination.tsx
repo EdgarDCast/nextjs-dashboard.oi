@@ -13,7 +13,8 @@ export default function Pagination({ totalPages, currentPage }: PaginationProps)
   const router = useRouter();
 
   const createPageURL = (page: number) => {
-    const params = new URLSearchParams(searchParams.toString());
+    // Copia segura de los params actuales
+    const params = new URLSearchParams(searchParams);
     params.set('page', String(page));
     return `${pathname}?${params.toString()}`;
   };
@@ -28,30 +29,41 @@ export default function Pagination({ totalPages, currentPage }: PaginationProps)
   const pages = Array.from({ length: end - start + 1 }, (_, i) => start + i);
 
   return (
-    <nav className="flex items-center gap-2">
+    <nav aria-label="Pagination" className="flex items-center gap-2">
       <button
+        type="button"
         className="rounded border px-3 py-1 text-sm disabled:opacity-50"
         disabled={currentPage <= 1}
-        onClick={() => go(currentPage - 1)}
+        aria-label="Previous page"
+        aria-disabled={currentPage <= 1 || undefined}
+        onClick={() => go(Math.max(1, currentPage - 1))}
       >
         Prev
       </button>
 
-      {pages.map((p) => (
-        <button
-          key={p}
-          className={`rounded border px-3 py-1 text-sm ${p === currentPage ? 'bg-gray-900 text-white' : ''}`}
-          onClick={() => go(p)}
-          aria-current={p === currentPage ? 'page' : undefined}
-        >
-          {p}
-        </button>
-      ))}
+      {pages.map((p) => {
+        const isCurrent = p === currentPage;
+        return (
+          <button
+            key={p}
+            type="button"
+            className={`rounded border px-3 py-1 text-sm ${isCurrent ? 'bg-gray-900 text-white' : ''}`}
+            onClick={() => go(p)}
+            aria-label={`Page ${p}`}
+            aria-current={isCurrent ? 'page' : undefined}
+          >
+            {p}
+          </button>
+        );
+      })}
 
       <button
+        type="button"
         className="rounded border px-3 py-1 text-sm disabled:opacity-50"
         disabled={currentPage >= totalPages}
-        onClick={() => go(currentPage + 1)}
+        aria-label="Next page"
+        aria-disabled={currentPage >= totalPages || undefined}
+        onClick={() => go(Math.min(totalPages, currentPage + 1))}
       >
         Next
       </button>

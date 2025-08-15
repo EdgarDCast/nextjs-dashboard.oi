@@ -7,10 +7,9 @@ import InvoicesTable from './table';
 import { fetchInvoicesPages } from '@/app/lib/data';
 import { InvoicesTableSkeleton } from '@/app/ui/skeletons';
 
-
 type SearchParams = {
-  query?: string;
-  page?: string;
+  query?: string | string[];
+  page?: string | string[];
 };
 
 export default async function Page({
@@ -20,9 +19,11 @@ export default async function Page({
   searchParams?: Promise<SearchParams>;
 }) {
   const sp = (await searchParams) ?? {};
-  const query = (sp.query ?? '').toString();
+  const queryParam = Array.isArray(sp.query) ? sp.query[0] : sp.query;
+  const pageParam = Array.isArray(sp.page) ? sp.page[0] : sp.page;
 
-  const parsed = Number(sp.page ?? '1');
+  const query = (queryParam ?? '').toString();
+  const parsed = Number(pageParam ?? '1');
   const requestedPage = Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
 
   const totalPages = await fetchInvoicesPages(query);
@@ -30,18 +31,22 @@ export default async function Page({
   const currentPage = Math.min(requestedPage, safeTotal);
 
   return (
-    <main className="p-6 space-y-6">
+    // No anidar <main>: el layout ya tiene <main id="main-content">
+    <section aria-labelledby="invoices-heading" className="p-6 space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-bold">Invoices</h1>
+        <h1 id="invoices-heading" className="text-2xl font-bold">
+          Invoices
+        </h1>
 
         {/* derecha: botón + buscador + paginación compacta */}
         <div className="flex w-full items-center gap-3 sm:w-auto">
           <Link
             href="/dashboard/invoices/create"
-            className="rounded bg-blue-600 px-3 py-2 text-white hover:bg-blue-700"
+            className="rounded bg-blue-600 px-3 py-2 text-white hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+            aria-label="Create invoice"
           >
-            New
+            Create invoice
           </Link>
 
           <Search
@@ -65,6 +70,6 @@ export default async function Page({
       <div className="flex justify-end">
         <Pagination totalPages={safeTotal} currentPage={currentPage} />
       </div>
-    </main>
+    </section>
   );
 }
